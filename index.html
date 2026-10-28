@@ -8,6 +8,8 @@
     <meta name="apple-mobile-web-app-title" content="2048">
     <title>2048</title>
     <style>
+        * { box-sizing: border-box; }
+        
         body {
             margin: 0;
             padding: 0;
@@ -17,87 +19,121 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            height: 100vh;
+            min-height: 100vh;
             touch-action: none;
             user-select: none;
             overflow: hidden;
+            padding: 20px; /* 防止贴边 */
         }
+
+        .container {
+            width: 100%;
+            max-width: 450px; /* 限制最大宽度 */
+            display: flex;
+            flex-direction: column;
+        }
+
         .header {
-            width: 90vw;
-            max-width: 400px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
+            width: 100%;
         }
+
         h1 {
-            font-size: 48px;
+            font-size: 42px;
             margin: 0;
             color: #776e65;
         }
+
         .scores {
             display: flex;
             gap: 10px;
+            flex: 1;
+            justify-content: center;
         }
+
         .score-box {
             background: #bbada0;
-            padding: 8px 15px;
+            padding: 6px 12px;
             border-radius: 6px;
             color: white;
             font-weight: bold;
             text-align: center;
-            min-width: 70px;
+            min-width: 60px;
         }
+
         .score-box div:first-child {
-            font-size: 11px;
+            font-size: 10px;
             color: #eee4da;
             margin-bottom: 2px;
         }
+
         .score-box div:last-child {
-            font-size: 20px;
+            font-size: 18px;
         }
+
+        .restart-btn {
+            background: #8f7a66;
+            color: #f9f6f2;
+            border: none;
+            border-radius: 6px;
+            padding: 8px 15px;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        /* 核心修复：用 aspect-ratio 强制锁定正方形 */
         .game-container {
             position: relative;
             background: #bbada0;
             border-radius: 10px;
             padding: 10px;
-            width: 90vw;
-            max-width: 400px;
-            height: 90vw;
-            max-height: 400px;
-            box-sizing: border-box;
+            width: 100%;
+            aspect-ratio: 1 / 1; /* 强制宽高比例为 1:1 */
+            margin: 0 auto;
         }
+
         .grid {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
+            grid-template-rows: repeat(4, 1fr);
             grid-gap: 10px;
             width: 100%;
             height: 100%;
         }
+
         .cell {
             background: rgba(238, 228, 218, 0.35);
             border-radius: 6px;
             display: flex;
             justify-content: center;
             align-items: center;
-            font-size: 35px;
+            font-size: 32px; /* 字号稍微调整，防止溢出 */
             font-weight: bold;
             color: #776e65;
             transition: all 0.1s ease-in-out;
+            width: 100%;
+            height: 100%;
         }
+
+        /* 数字颜色 */
         .cell[data-value="2"] { background: #eee4da; }
         .cell[data-value="4"] { background: #ede0c8; }
         .cell[data-value="8"] { background: #f2b179; color: #f9f6f2; }
         .cell[data-value="16"] { background: #f59563; color: #f9f6f2; }
         .cell[data-value="32"] { background: #f67c5f; color: #f9f6f2; }
         .cell[data-value="64"] { background: #f65e3b; color: #f9f6f2; }
-        .cell[data-value="128"] { background: #edcf72; color: #f9f6f2; font-size: 30px; }
-        .cell[data-value="256"] { background: #edcc61; color: #f9f6f2; font-size: 30px; }
-        .cell[data-value="512"] { background: #edc850; color: #f9f6f2; font-size: 30px; }
-        .cell[data-value="1024"] { background: #edc53f; color: #f9f6f2; font-size: 25px; }
-        .cell[data-value="2048"] { background: #edc22e; color: #f9f6f2; font-size: 25px; box-shadow: 0 0 30px 10px rgba(243, 215, 116, 0.5); }
-        .cell[data-value="4096"] { background: #3c3a32; color: #f9f6f2; font-size: 25px; }
+        .cell[data-value="128"] { background: #edcf72; color: #f9f6f2; font-size: 28px; }
+        .cell[data-value="256"] { background: #edcc61; color: #f9f6f2; font-size: 28px; }
+        .cell[data-value="512"] { background: #edc850; color: #f9f6f2; font-size: 28px; }
+        .cell[data-value="1024"] { background: #edc53f; color: #f9f6f2; font-size: 22px; }
+        .cell[data-value="2048"] { background: #edc22e; color: #f9f6f2; font-size: 22px; box-shadow: 0 0 20px 5px rgba(243, 215, 116, 0.5); }
+        .cell[data-value="4096"] { background: #3c3a32; color: #f9f6f2; font-size: 22px; }
 
+        /* 弹窗 */
         .game-over, .win-over {
             position: absolute;
             top: 0; left: 0; right: 0; bottom: 0;
@@ -109,8 +145,8 @@
             border-radius: 10px;
             z-index: 10;
         }
-        .game-over h2 { font-size: 40px; color: #776e65; margin-bottom: 10px; }
-        .win-over h2 { font-size: 40px; color: #edc22e; text-shadow: 1px 1px 2px #776e65; margin-bottom: 10px; }
+        .game-over h2 { font-size: 36px; color: #776e65; margin-bottom: 10px; }
+        .win-over h2 { font-size: 36px; color: #edc22e; text-shadow: 1px 1px 2px #776e65; margin-bottom: 10px; }
         
         button {
             background: #8f7a66;
@@ -118,15 +154,13 @@
             border: none;
             border-radius: 6px;
             padding: 10px 20px;
-            font-size: 18px;
+            font-size: 16px;
             font-weight: bold;
             cursor: pointer;
             margin-top: 20px;
         }
         .btn-group { display: flex; gap: 10px; }
-        .restart-btn { margin: 0; padding: 8px 15px; font-size: 14px; }
 
-        /* 彩带特效画布 */
         #confetti-canvas {
             position: fixed;
             top: 0; left: 0;
@@ -140,30 +174,30 @@
 
     <canvas id="confetti-canvas"></canvas>
 
-    <div class="header">
-        <h1>2048</h1>
-        <div class="scores">
-            <div class="score-box"><div>SCORE</div><div id="score">0</div></div>
-            <div class="score-box"><div>BEST</div><div id="best">0</div></div>
-        </div>
-        <button class="restart-btn" onclick="initGame()">重开</button>
-    </div>
-
-    <div class="game-container">
-        <div class="grid" id="grid"></div>
-        
-        <!-- 失败弹窗 -->
-        <div class="game-over" id="game-over">
-            <h2>游戏结束!</h2>
-            <button onclick="initGame()">再来一局</button>
+    <div class="container">
+        <div class="header">
+            <h1>2048</h1>
+            <div class="scores">
+                <div class="score-box"><div>SCORE</div><div id="score">0</div></div>
+                <div class="score-box"><div>BEST</div><div id="best">0</div></div>
+            </div>
+            <button class="restart-btn" onclick="initGame()">重开</button>
         </div>
 
-        <!-- 胜利弹窗 -->
-        <div class="win-over" id="win-over">
-            <h2>🎉 2048 达成!</h2>
-            <div class="btn-group">
-                <button onclick="continueGame()">继续挑战</button>
+        <div class="game-container">
+            <div class="grid" id="grid"></div>
+            
+            <div class="game-over" id="game-over">
+                <h2>游戏结束!</h2>
                 <button onclick="initGame()">再来一局</button>
+            </div>
+
+            <div class="win-over" id="win-over">
+                <h2>🎉 2048 达成!</h2>
+                <div class="btn-group">
+                    <button onclick="continueGame()">继续挑战</button>
+                    <button onclick="initGame()">再来一局</button>
+                </div>
             </div>
         </div>
     </div>
@@ -173,7 +207,7 @@
         let score = 0;
         let bestScore = parseInt(localStorage.getItem('best2048')) || 0;
         let isGameOver = false;
-        let hasWon = false; // 是否已经合出过2048
+        let hasWon = false;
         let touchStartX = 0;
         let touchStartY = 0;
 
@@ -234,7 +268,6 @@
                         cell.innerText = board[r][c];
                         cell.setAttribute('data-value', board[r][c]);
                         
-                        // 检查是否合成出了 2048
                         if (board[r][c] === 2048 && !hasWon) {
                             hasWon = true;
                             triggerWin();
@@ -338,13 +371,11 @@
             }
         }
 
-        // 胜利触发
         function triggerWin() {
             winOverEl.style.display = 'flex';
             fireConfetti();
         }
 
-        // 触屏滑动
         document.addEventListener('touchstart', (e) => {
             touchStartX = e.touches[0].clientX;
             touchStartY = e.touches[0].clientY;
@@ -372,7 +403,6 @@
             touchStartY = 0;
         }, { passive: false });
 
-        // 电脑端按键
         document.addEventListener('keydown', (e) => {
             if (e.key === 'ArrowLeft') handleMove('left');
             if (e.key === 'ArrowRight') handleMove('right');
@@ -380,7 +410,6 @@
             if (e.key === 'ArrowDown') handleMove('down');
         });
 
-        // ======== 彩带特效核心逻辑 ========
         const canvas = document.getElementById('confetti-canvas');
         const ctx = canvas.getContext('2d');
         let particles = [];
@@ -419,8 +448,8 @@
 
             for (let i = particles.length - 1; i >= 0; i--) {
                 let p = particles[i];
-                p.vy += 0.4; // 重力
-                p.vx *= 0.98; // 空气阻力
+                p.vy += 0.4;
+                p.vx *= 0.98;
                 p.x += p.vx;
                 p.y += p.vy;
                 p.rotation += p.rotSpeed;
